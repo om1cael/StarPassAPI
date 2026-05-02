@@ -2,6 +2,7 @@ package com.om1cael.starpassapi.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,8 +16,6 @@ public class Event {
     private Long id;
 
     @NotNull
-    private String artist;
-
-    @NotNull
-    private String location;
+    @Size(min = 8)
+    private String name;
 }
