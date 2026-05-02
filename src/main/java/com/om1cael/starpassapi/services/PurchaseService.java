@@ -1,5 +1,6 @@
 package com.om1cael.starpassapi.services;
 
+import com.om1cael.starpassapi.dtos.PaymentRequestDTO;
 import com.om1cael.starpassapi.dtos.PurchaseRequestDTO;
 import com.om1cael.starpassapi.dtos.PurchaseResponseDTO;
 import com.om1cael.starpassapi.enums.PurchaseStatus;
@@ -9,6 +10,7 @@ import com.om1cael.starpassapi.models.Ticket;
 import com.om1cael.starpassapi.repositories.PurchaseRepository;
 import com.om1cael.starpassapi.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,10 +19,12 @@ import java.math.BigDecimal;
 public class PurchaseService {
     final PurchaseRepository repository;
     final TicketRepository ticketRepository;
+    final RabbitTemplate rabbitTemplate;
 
-    public PurchaseService(PurchaseRepository purchaseRepository, TicketRepository ticketRepository) {
+    public PurchaseService(PurchaseRepository purchaseRepository, TicketRepository ticketRepository, RabbitTemplate rabbitTemplate) {
         this.repository = purchaseRepository;
         this.ticketRepository = ticketRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public PurchaseResponseDTO create(PurchaseRequestDTO purchase) {
@@ -28,15 +32,15 @@ public class PurchaseService {
                 .orElseThrow(() -> new EntityNotFoundException("Ticket does not exists"));
 
         if(ticket.getAmount() < purchase.amount()) {
-            throw new TicketNotAvailableException("The ticket is not available anymore");
+            throw new TicketNotAvailableException("Amount not available");
         }
 
-        BigDecimal amount = BigDecimal.valueOf(purchase.amount());
+        BigDecimal price = ticket.getPrice().multiply(BigDecimal.valueOf(purchase.amount()));
 
         Purchase finalPurchase = new Purchase(
                 ticket,
                 purchase.amount(),
-                ticket.getPrice().multiply(amount),
+                price,
                 PurchaseStatus.RESERVED
         );
 
@@ -45,12 +49,24 @@ public class PurchaseService {
         var createdPurchase = repository.save(finalPurchase);
         ticketRepository.save(ticket);
 
+        sendPaymentRequestMessage(createdPurchase);
+
         return new PurchaseResponseDTO(
                 createdPurchase.getId(),
                 createdPurchase.getTicketId().getId(),
                 createdPurchase.getTicketAmount(),
                 createdPurchase.getPrice()
         );
+    }
+
+    private void sendPaymentRequestMessage(Purchase createdPurchase) {
+        PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO(
+                createdPurchase.getId(),
+                createdPurchase.getTicketAmount(),
+                createdPurchase.getPrice()
+        );
+
+        rabbitTemplate.convertAndSend( "orders.topic", "order.created", paymentRequestDTO);
     }
 
     public PurchaseResponseDTO getPurchase(Long id) {

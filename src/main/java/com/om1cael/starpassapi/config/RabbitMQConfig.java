@@ -28,7 +28,6 @@ public class RabbitMQConfig {
                 .bind(orderQueue)
                 .to(orderExchange)
                 .with("order.created");
-
     }
 
     @Bean
