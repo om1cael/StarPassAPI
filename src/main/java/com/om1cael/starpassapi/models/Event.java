@@ -1,4 +1,4 @@
-package com.om1cael.starpassapi.model;
+package com.om1cael.starpassapi.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

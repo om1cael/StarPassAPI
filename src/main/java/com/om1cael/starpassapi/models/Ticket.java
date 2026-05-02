@@ -1,4 +1,4 @@
-package com.om1cael.starpassapi.model;
+package com.om1cael.starpassapi.models;
 
 import com.om1cael.starpassapi.enums.TicketType;
 import jakarta.persistence.*;
