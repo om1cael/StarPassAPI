@@ -62,7 +62,6 @@ public class PurchaseService {
     private void sendPaymentRequestMessage(Purchase createdPurchase) {
         PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO(
                 createdPurchase.getId(),
-                createdPurchase.getTicketAmount(),
                 createdPurchase.getPrice()
         );
 
