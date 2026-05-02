@@ -3,6 +3,7 @@ package com.om1cael.starpassapi.services;
 import com.om1cael.starpassapi.dtos.PurchaseRequestDTO;
 import com.om1cael.starpassapi.dtos.PurchaseResponseDTO;
 import com.om1cael.starpassapi.enums.PurchaseStatus;
+import com.om1cael.starpassapi.exceptions.TicketNotAvailableException;
 import com.om1cael.starpassapi.models.Purchase;
 import com.om1cael.starpassapi.models.Ticket;
 import com.om1cael.starpassapi.repositories.PurchaseRepository;
@@ -25,6 +26,10 @@ public class PurchaseService {
     public PurchaseResponseDTO create(PurchaseRequestDTO purchase) {
         Ticket ticket = ticketRepository.findById(purchase.ticketId())
                 .orElseThrow(() -> new EntityNotFoundException("Ticket does not exists"));
+
+        if(ticket.getAmount() < purchase.amount()) {
+            throw new TicketNotAvailableException("The ticket is not available anymore");
+        }
 
         BigDecimal amount = BigDecimal.valueOf(purchase.amount());
 
