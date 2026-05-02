@@ -40,7 +40,10 @@ public class PurchaseService {
                 PurchaseStatus.RESERVED
         );
 
+        ticket.setAmount(ticket.getAmount() - purchase.amount());
+
         var createdPurchase = repository.save(finalPurchase);
+        ticketRepository.save(ticket);
 
         return new PurchaseResponseDTO(
                 createdPurchase.getId(),
