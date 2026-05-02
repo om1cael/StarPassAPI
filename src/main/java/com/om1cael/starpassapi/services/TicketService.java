@@ -1,6 +1,7 @@
 package com.om1cael.starpassapi.services;
 
 import com.om1cael.starpassapi.dtos.TicketDTO;
+import com.om1cael.starpassapi.dtos.TicketResponseDTO;
 import com.om1cael.starpassapi.models.Event;
 import com.om1cael.starpassapi.models.Ticket;
 import com.om1cael.starpassapi.repositories.EventRepository;
@@ -18,7 +19,7 @@ public class TicketService {
         this.eventRepository = eventRepository;
     }
 
-    public TicketDTO create(TicketDTO ticket) {
+    public TicketResponseDTO create(TicketDTO ticket) {
         Event event = eventRepository.findById(ticket.eventId())
                 .orElseThrow(() -> new EntityNotFoundException("Event does not exists"));
 
@@ -29,7 +30,14 @@ public class TicketService {
                 ticket.amount()
         );
 
-        repository.save(finalTicket);
-        return ticket;
+        var createdTicket = repository.save(finalTicket);
+
+        return new TicketResponseDTO(
+                createdTicket.getId(),
+                createdTicket.getEventId().getId(),
+                createdTicket.getTicketType(),
+                createdTicket.getPrice(),
+                createdTicket.getAmount()
+        );
     }
 }

@@ -1,6 +1,7 @@
 package com.om1cael.starpassapi.controllers;
 
 import com.om1cael.starpassapi.dtos.TicketDTO;
+import com.om1cael.starpassapi.dtos.TicketResponseDTO;
 import com.om1cael.starpassapi.services.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class TicketController {
     }
 
     @PostMapping
-    public ResponseEntity<TicketDTO> create(@RequestBody @Valid TicketDTO ticket) {
+    public ResponseEntity<TicketResponseDTO> create(@RequestBody @Valid TicketDTO ticket) {
         var createdTicket = service.create(ticket);
         return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
     }
