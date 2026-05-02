@@ -5,19 +5,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Table(name = "ticket_purchases")
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 public class Purchase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "ticketId", referencedColumnName = "id")
     private Ticket ticketId;
 

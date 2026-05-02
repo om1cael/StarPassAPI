@@ -1,15 +1,19 @@
 package com.om1cael.starpassapi.services;
 
 import com.om1cael.starpassapi.dtos.PaymentRequestDTO;
+import com.om1cael.starpassapi.dtos.PaymentResultDTO;
 import com.om1cael.starpassapi.dtos.PurchaseRequestDTO;
 import com.om1cael.starpassapi.dtos.PurchaseResponseDTO;
 import com.om1cael.starpassapi.enums.PurchaseStatus;
 import com.om1cael.starpassapi.exceptions.TicketNotAvailableException;
+import com.om1cael.starpassapi.models.Event;
 import com.om1cael.starpassapi.models.Purchase;
 import com.om1cael.starpassapi.models.Ticket;
+import com.om1cael.starpassapi.repositories.EventRepository;
 import com.om1cael.starpassapi.repositories.PurchaseRepository;
 import com.om1cael.starpassapi.repositories.TicketRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -78,5 +82,25 @@ public class PurchaseService {
                 purchase.getTicketAmount(),
                 purchase.getPrice()
         );
+    }
+
+    @RabbitListener(queues = "payment.result")
+    public void getPaymentResult(PaymentResultDTO paymentResult) {
+        Purchase purchase = repository.findById(paymentResult.purchaseId())
+                .orElseThrow(() -> new EntityNotFoundException("The purchase can't be verified because the event does not exists"));
+
+        if(!paymentResult.success()) {
+            purchase.setPurchaseStatus(PurchaseStatus.DENIED);
+            Ticket ticket = ticketRepository.findById(purchase.getTicketId().getId())
+                            .orElseThrow(() -> new EntityNotFoundException("The ticket was not found"));
+
+            ticket.setAmount(ticket.getAmount() + 1);
+            ticketRepository.save(ticket);
+            repository.save(purchase);
+            return;
+        }
+
+        purchase.setPurchaseStatus(PurchaseStatus.SOLD);
+        repository.save(purchase);
     }
 }
