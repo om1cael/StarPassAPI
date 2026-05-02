@@ -27,7 +27,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseResponseDTO> create(@PathVariable Long id) {
+    public ResponseEntity<PurchaseResponseDTO> get(@PathVariable Long id) {
         var purchase = service.getPurchase(id);
         return new ResponseEntity<>(purchase, HttpStatus.FOUND);
     }
