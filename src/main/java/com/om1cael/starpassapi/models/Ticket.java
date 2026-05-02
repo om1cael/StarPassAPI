@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Table(name = "tickets")
+@NoArgsConstructor
 @Entity
 @Getter
 @Setter
@@ -33,4 +35,11 @@ public class Ticket {
     @NotNull
     @Min(0)
     private int amount;
+
+    public Ticket(Event event, TicketType ticketType, BigDecimal price, int amount) {
+        this.eventId = event;
+        this.ticketType = ticketType;
+        this.price = price;
+        this.amount = amount;
+    }
 }
