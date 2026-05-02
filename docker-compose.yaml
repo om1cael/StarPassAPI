@@ -1,0 +1,22 @@
+services:
+  postgresql:
+    image: postgres:18.3-alpine
+    environment:
+      POSTGRES_USER: starpass
+      POSTGRES_PASSWORD: 123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  rabbitmq:
+    image: rabbitmq:4.3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: starpass
+      RABBITMQ_DEFAULT_PASS: 123
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+
+volumes:
+  postgres_data:
